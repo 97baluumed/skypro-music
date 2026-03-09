@@ -4,7 +4,6 @@ import './page.css';
 import styles from './page.module.css'
 import classnames from 'classnames'
 
-
 export default function Home() {
   return (
     <div className={styles.wrapper}>
