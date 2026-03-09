@@ -122,3 +122,51 @@
   text-align: right;
   color: #696969;
 }
+
+.track__dot {
+    position: absolute;
+    top: 18px;
+    left: 18px;
+    width: 16px;
+    height: 16px;
+    background: #b672ff;
+    border-radius: 8px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+}
+
+.playlist__item--active .track__dot {
+    opacity: 1;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.4);
+        opacity: 0.6;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.playlist__item--playing .track__dot {
+    animation: pulse 1.5s infinite ease-in-out;
+}
+
+.track__titleImage {
+    position: relative;
+    width: 51px;
+    height: 51px;
+    padding: 16px;
+    background: #313131;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 17px;
+}

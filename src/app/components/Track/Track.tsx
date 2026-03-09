@@ -6,6 +6,7 @@ import { TrackType } from '@/app/sharedTypes/types';
 import { useAppDispatch } from '@/app/store/store';
 import { formatTime } from '@/app/utils/helpers';
 import { setCurrentTrack } from '@/app/store/features/trackSlice';
+import { useAppSelector } from '@/app/store/store';
 
 type TrackProps = {
     track: TrackType;
@@ -13,25 +14,39 @@ type TrackProps = {
 
 export default function Track({ track }: TrackProps) {
     const dispatch = useAppDispatch();
+    const currentTrack = useAppSelector((state) => state.tracks.currentTrack);
+    const isPlaying = useAppSelector((state) => state.tracks.isPlay);
+
+    const isActive = currentTrack?._id === track._id;
+    const isCurrentAndPlaying = isActive && isPlaying;
 
     const onClickTrack = () => {
         dispatch(setCurrentTrack(track));
     };
 
-    // Извлекаем подзаголовок: (feat. ...) или (Remix)
     const subtitleMatch = track.name.match(/\s*\(.+?\)/);
     const mainName = subtitleMatch ? track.name.replace(subtitleMatch[0], '') : track.name;
     const subtitle = subtitleMatch ? subtitleMatch[0] : '';
 
     return (
-        <div className={styles.playlist__item} onClick={onClickTrack}>
+        <div
+            className={`${styles.playlist__item} ${isActive ? styles['playlist__item--active'] : ''
+                } ${isCurrentAndPlaying ? styles['playlist__item--playing'] : ''}`}
+            onClick={onClickTrack}
+        >
             <div className={styles.playlist__track}>
                 <div className={styles.track__title}>
                     <div className={styles.track__titleImage}>
-                        <svg className={styles.track__titleSvg}>
-                            <use xlinkHref="/img/icon/sprite.svg#icon-note"></use>
-                        </svg>
+                        {/* Тернарный оператор: если активен — точка, иначе — нота */}
+                        {isActive ? (
+                            <div className={styles.track__dot}></div>
+                        ) : (
+                            <svg className={styles.track__titleSvg}>
+                                <use xlinkHref="/img/icon/sprite.svg#icon-note"></use>
+                            </svg>
+                        )}
                     </div>
+
                     <div className="track__title-text">
                         <Link className={styles.track__titleLink} href="#">
                             {mainName}
