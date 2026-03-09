@@ -37,7 +37,6 @@ export default function Track({ track }: TrackProps) {
             <div className={styles.playlist__track}>
                 <div className={styles.track__title}>
                     <div className={styles.track__titleImage}>
-                        {/* Тернарный оператор: если активен — точка, иначе — нота */}
                         {isActive ? (
                             <div className={styles.track__dot}></div>
                         ) : (
