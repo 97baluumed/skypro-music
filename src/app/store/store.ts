@@ -1,29 +1,22 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
-import { useDispatch, useSelector, useStore } from 'react-redux';
 import { trackSliceReducer } from '@/app/store/features/trackSlice';
+import { authReducer } from '@/app/store/features/authSlice';
 
 export const makeStore = () => {
     return configureStore({
         reducer: combineReducers({
             tracks: trackSliceReducer,
+            auth: authReducer,
         }),
     });
 };
 
-// Infer the type of makeStore
 export type AppStore = ReturnType<typeof makeStore>;
+export type RootState = ReturnType<AppStore['getState']>;
+export type AppDispatch = AppStore['dispatch'];
 
-// Infer the \`RootState\` and \`AppDispatch\` types from the store itself
-type RootState = ReturnType<AppStore['getState']>;
-type AppDispatch = AppStore['dispatch'];
+import { useDispatch, useSelector, useStore } from 'react-redux';
 
-// Для нового TS
-// Use throughout your app instead of plain \`useDispatch\` and \`useSelector\`
-export const useAppDispatch = useDispatch.withTypes<AppDispatch>();
-export const useAppSelector = useSelector.withTypes<RootState>();
-export const useAppStore = useStore.withTypes<AppStore>();
-
-// Для старого TS
-// export const useAppDispatch: () => AppDispatch = useDispatch;
-// export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
-// export const useAppStore: () => AppStore = useStore;
+export const useAppDispatch = () => useDispatch<AppDispatch>();
+export const useAppSelector = <T>(selector: (state: RootState) => T) => useSelector(selector);
+export const useAppStore = () => useStore<AppStore>();

@@ -6,7 +6,7 @@ export interface TrackType {
     genre: string[];
     duration_in_seconds: number;
     album: string;
-    logo: null;
+    logo: null | string;
     track_file: string;
     stared_user: number[];
 }

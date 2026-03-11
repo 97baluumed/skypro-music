@@ -53,6 +53,7 @@
 .menu__item {
   padding: 5px 0;
   margin-bottom: 16px;
+  list-style-type: none;
 }
 
 .menu__link {
@@ -62,3 +63,13 @@
   line-height: 24px;
 }
 
+.menu__link,
+.menu__btnLogout {
+  color: #ffffff;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 24px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}

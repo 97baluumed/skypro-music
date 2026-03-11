@@ -1,72 +1,42 @@
+'use client';
+
 import styles from './Centerblock.module.css';
 import classnames from 'classnames';
 import Track from '../Track/Track';
-
-// 🔽 Обновлённые моки — теперь с правильными данными
-const mockTracks = [
-    {
-        _id: 1,
-        name: 'Guilt',
-        author: 'Nero',
-        album: 'Welcome Reality',
-        release_date: '2011-02-14',
-        genre: ['dubstep', 'electro house'],
-        duration_in_seconds: 284, // 4:44
-        logo: null,
-        track_file: '/tracks/guilt.mp3',
-        stared_user: [],
-    },
-    {
-        _id: 2,
-        name: 'Elektro',
-        author: 'Dynoro, Outwork, Mr. Gee',
-        album: 'Elektro',
-        release_date: '2018-06-15',
-        genre: ['electro house', 'dance'],
-        duration_in_seconds: 142, // 2:22
-        logo: null,
-        track_file: '/tracks/elektro.mp3',
-        stared_user: [],
-    },
-    {
-        _id: 3,
-        name: 'I’m Fire',
-        author: 'Ali Bakgor',
-        album: 'I’m Fire',
-        release_date: '2019-03-08',
-        genre: ['house', 'progressive'],
-        duration_in_seconds: 142, // 2:22
-        logo: null,
-        track_file: '/tracks/im-fire.mp3',
-        stared_user: [],
-    },
-    {
-        _id: 4,
-        name: 'Non Stop',
-        author: 'Стоункат, Psychopath',
-        album: 'Non Stop',
-        release_date: '2020-11-20',
-        genre: ['hardbass', 'russian rave'],
-        duration_in_seconds: 252, // 4:12
-        logo: null,
-        track_file: '/tracks/non-stop.mp3',
-        stared_user: [],
-    },
-    {
-        _id: 5,
-        name: 'Run Run',
-        author: 'Jaded, Will Clarke, AR/CO',
-        album: 'Run Run',
-        release_date: '2021-07-09',
-        genre: ['tech house', 'electronic'],
-        duration_in_seconds: 174, // 2:54
-        logo: null,
-        track_file: '/tracks/run-run.mp3',
-        stared_user: [],
-    },
-];
+import { useEffect, useState } from 'react';
+import { fetchTracks } from '@/app/api/tracks';
+import { useAppSelector } from '@/app/store/store';
+import { TrackType } from '@/app/sharedTypes/types';
 
 export default function Centerblock() {
+    const [tracks, setTracks] = useState<TrackType[]>([]);
+    const [loading, setLoading] = useState(true);
+    const accessToken = useAppSelector((state) => state.auth.accessToken);
+
+    useEffect(() => {
+        if (!accessToken) return;
+
+        const loadTracks = async () => {
+            try {
+                const response = await fetchTracks(accessToken);
+                if (response.success && Array.isArray(response.data)) {
+                    setTracks(response.data);
+                } else {
+                    setTracks([]);
+                }
+            } catch (err) {
+                console.error('Failed to load tracks:', err);
+                setTracks([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadTracks();
+    }, [accessToken]);
+
+    if (loading) return <div className={styles.centerblock}>Загрузка...</div>;
+
     return (
         <div className={styles.centerblock}>
             <div className={styles.centerblock__search}>
@@ -105,9 +75,11 @@ export default function Centerblock() {
                     </div>
                 </div>
                 <div className={styles.content__playlist}>
-                    {mockTracks.map((track) => (
-                        <Track key={track._id} track={track} />
-                    ))}
+                    {tracks.length > 0 ? (
+                        tracks.map((track) => <Track key={track._id} track={track} />)
+                    ) : (
+                        <p>Треки не найдены</p>
+                    )}
                 </div>
             </div>
         </div>
