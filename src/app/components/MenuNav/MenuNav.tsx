@@ -1,8 +1,22 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
 import styles from './MenuNav.module.css';
+import { useAppSelector, useAppDispatch } from '@/app/store/store';
+import { logout } from '@/app/store/features/authSlice';
+import { useRouter } from 'next/navigation';
 
 export default function MenuNav() {
+    const dispatch = useAppDispatch();
+    const isLoggedIn = useAppSelector((state) => state.auth.isLoggedIn);
+    const router = useRouter();
+
+    const handleLogout = () => {
+        dispatch(logout());
+        router.push('/login');
+    };
+
     return (
         <nav className={styles.main__nav}>
             <div className={styles.nav__logo}>
@@ -11,7 +25,7 @@ export default function MenuNav() {
                     height={170}
                     className={styles.logo__image}
                     src="/img/logo.png"
-                    alt={'logo'}
+                    alt="logo"
                 />
             </div>
             <div className={styles.nav__burger}>
@@ -31,13 +45,21 @@ export default function MenuNav() {
                             Мой плейлист
                         </Link>
                     </li>
-                    <li className={styles.menu__item}>
-                        <Link href="../signin.html" className={styles.menu__link}>
-                            Войти
-                        </Link>
-                    </li>
+                    {isLoggedIn ? (
+                        <li className={styles.menu__item}>
+                            <button onClick={handleLogout} className={styles.menu__btnLogout}>
+                                Выйти
+                            </button>
+                        </li>
+                    ) : (
+                        <li className={styles.menu__item}>
+                            <Link href="/login" className={styles.menu__link}>
+                                Войти
+                            </Link>
+                        </li>
+                    )}
                 </ul>
             </div>
         </nav>
-    )
+    );
 }
