@@ -6,15 +6,22 @@ import styles from './MenuNav.module.css';
 import { useAppSelector, useAppDispatch } from '@/app/store/store';
 import { logout } from '@/app/store/features/authSlice';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import classNames from 'classnames';  // Исправлено: classNames вместо classnames
 
 export default function MenuNav() {
     const dispatch = useAppDispatch();
     const isLoggedIn = useAppSelector((state) => state.auth.isLoggedIn);
     const router = useRouter();
+    const [isMenuOpen, setIsMenuOpen] = useState(true);
 
     const handleLogout = () => {
         dispatch(logout());
         router.push('/login');
+    };
+
+    const toggleMenu = () => {
+        setIsMenuOpen(prev => !prev);
     };
 
     return (
@@ -28,12 +35,21 @@ export default function MenuNav() {
                     alt="logo"
                 />
             </div>
-            <div className={styles.nav__burger}>
+            <div
+                className={styles.nav__burger}
+                onClick={toggleMenu}
+                role="button"
+                aria-label="Toggle menu"
+            >
                 <span className={styles.burger__line}></span>
                 <span className={styles.burger__line}></span>
                 <span className={styles.burger__line}></span>
             </div>
-            <div className={styles.nav__menu}>
+            <div
+                className={classNames(styles.nav__menu, {  // Исправлено: classNames
+                    [styles.hidden]: !isMenuOpen
+                })}
+            >
                 <ul className={styles.menu__list}>
                     <li className={styles.menu__item}>
                         <Link href="#" className={styles.menu__link}>

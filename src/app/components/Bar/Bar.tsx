@@ -14,15 +14,37 @@ export default function Bar() {
     const currentTrack = useAppSelector((state) => state.tracks.currentTrack);
     const isPlay = useAppSelector((state) => state.tracks.isPlay);
 
+    // Эффект для загрузки трека
     useEffect(() => {
         if (!currentTrack || !audioRef.current) return;
 
+        // Устанавливаем src нового трека
+        audioRef.current.src = currentTrack.track_file || '';
+
+        // Сбрасываем время воспроизведения
+        audioRef.current.currentTime = 0;
+
+        // Если должен играть - запускаем
         if (isPlay) {
-            audioRef.current.play().catch((err) => console.warn('Autoplay failed:', err));
+            audioRef.current.play().catch(err => {
+                console.warn('Autoplay failed:', err);
+            });
+        }
+    }, [currentTrack]);
+
+    // Эффект для управления воспроизведением/паузой
+    useEffect(() => {
+        if (!audioRef.current || !currentTrack) return;
+
+        if (isPlay) {
+            // Пытаемся воспроизвести с обработкой ошибок
+            audioRef.current.play().catch(err => {
+                console.warn('Play failed:', err);
+            });
         } else {
             audioRef.current.pause();
         }
-    }, [isPlay, currentTrack]);
+    }, [isPlay, currentTrack]); // Добавили isPlay в зависимости
 
     const handleTogglePlay = () => {
         dispatch(togglePlay());
@@ -32,8 +54,7 @@ export default function Bar() {
 
     return (
         <div className={styles.bar}>
-            <audio ref={audioRef} src={currentTrack.track_file} />
-
+            <audio ref={audioRef} />
             <div className={styles.bar__content}>
                 <div className={styles.bar__playerProgress}></div>
                 <div className={styles.bar__playerBlock}>
@@ -88,12 +109,12 @@ export default function Bar() {
                                 </div>
                                 <div className={styles.trackPlay__author}>
                                     <Link className={styles.trackPlay__authorLink} href="#">
-                                        {currentTrack.author}
+                                        {currentTrack.author || 'Неизвестный автор'}
                                     </Link>
                                 </div>
                                 <div className={styles.trackPlay__album}>
                                     <Link className={styles.trackPlay__albumLink} href="#">
-                                        {currentTrack.album}
+                                        {currentTrack.album || 'Неизвестный альбом'}
                                     </Link>
                                 </div>
                             </div>

@@ -13,24 +13,53 @@
 }
 
 .nav__burger {
-  width: 20px;
-  height: 36px;
-  padding: 13px 0;
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-  -ms-flex-direction: column;
-  flex-direction: column;
-  -webkit-box-pack: justify;
-  -ms-flex-pack: justify;
-  justify-content: space-between;
+    width: 20px;
+    height: 36px;
+    padding: 13px 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+    z-index: 20;
 }
 
 .nav__menu {
-  display: block;
-  visibility: visible;
+    display: block;
+    visibility: visible;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.nav__menu.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .main__nav {
+        width: 60px;
+        padding: 20px 0;
+    }
+    
+    .nav__logo {
+        display: none;
+    }
+    
+    .nav__menu {
+        position: absolute;
+        top: 0;
+        left: 60px;
+        width: 184px;
+        height: 100vh;
+        background-color: #181818;
+        padding: 20px 0 20px 20px;
+        z-index: 15;
+    }
+    
+    .nav__menu.hidden {
+        transform: translateX(-100%);
+    }
 }
 
 .logo__image {
