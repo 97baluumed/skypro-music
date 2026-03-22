@@ -24,7 +24,6 @@ export default function Track({ track }: TrackProps) {
         dispatch(setCurrentTrack(track));
     };
 
-    // Защита от некорректных данных
     const durationInSeconds = typeof track.duration_in_seconds === 'number' && 
                               !isNaN(track.duration_in_seconds) ? 
                               track.duration_in_seconds : 0;

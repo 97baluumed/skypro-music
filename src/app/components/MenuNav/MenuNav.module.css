@@ -35,7 +35,6 @@
     visibility: hidden;
 }
 
-/* Адаптивность */
 @media (max-width: 768px) {
     .main__nav {
         width: 60px;

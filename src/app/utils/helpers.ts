@@ -15,7 +15,7 @@ export function getUniqueValuesByKey(
         if (Array.isArray(value)) {
             value.forEach((v) => {
                 if (v) {
-                    uniqueValues.add(String(v)); // Явное преобразование в строку
+                    uniqueValues.add(String(v));
                 }
             });
         }
@@ -25,7 +25,7 @@ export function getUniqueValuesByKey(
         }
         // Если значение - число
         else if (typeof value === 'number') {
-            uniqueValues.add(String(value)); // Преобразуем число в строку
+            uniqueValues.add(String(value));
         }
     });
 

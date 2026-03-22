@@ -7,7 +7,7 @@ import { useAppSelector, useAppDispatch } from '@/app/store/store';
 import { logout } from '@/app/store/features/authSlice';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import classNames from 'classnames';  // Исправлено: classNames вместо classnames
+import classNames from 'classnames';
 
 export default function MenuNav() {
     const dispatch = useAppDispatch();
@@ -46,7 +46,7 @@ export default function MenuNav() {
                 <span className={styles.burger__line}></span>
             </div>
             <div
-                className={classNames(styles.nav__menu, {  // Исправлено: classNames
+                className={classNames(styles.nav__menu, {
                     [styles.hidden]: !isMenuOpen
                 })}
             >

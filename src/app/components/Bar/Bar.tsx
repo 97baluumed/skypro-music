@@ -14,17 +14,13 @@ export default function Bar() {
     const currentTrack = useAppSelector((state) => state.tracks.currentTrack);
     const isPlay = useAppSelector((state) => state.tracks.isPlay);
 
-    // Эффект для загрузки трека
     useEffect(() => {
         if (!currentTrack || !audioRef.current) return;
 
-        // Устанавливаем src нового трека
         audioRef.current.src = currentTrack.track_file || '';
 
-        // Сбрасываем время воспроизведения
         audioRef.current.currentTime = 0;
 
-        // Если должен играть - запускаем
         if (isPlay) {
             audioRef.current.play().catch(err => {
                 console.warn('Autoplay failed:', err);
@@ -32,19 +28,17 @@ export default function Bar() {
         }
     }, [currentTrack]);
 
-    // Эффект для управления воспроизведением/паузой
     useEffect(() => {
         if (!audioRef.current || !currentTrack) return;
 
         if (isPlay) {
-            // Пытаемся воспроизвести с обработкой ошибок
             audioRef.current.play().catch(err => {
                 console.warn('Play failed:', err);
             });
         } else {
             audioRef.current.pause();
         }
-    }, [isPlay, currentTrack]); // Добавили isPlay в зависимости
+    }, [isPlay, currentTrack]);
 
     const handleTogglePlay = () => {
         dispatch(togglePlay());

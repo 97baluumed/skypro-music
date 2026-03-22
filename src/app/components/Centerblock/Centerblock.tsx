@@ -15,18 +15,15 @@ export default function Centerblock() {
     const [loading, setLoading] = useState(true);
     const [activeFilter, setActiveFilter] = useState<string | null>(null);
 
-    // Состояния для выбранных значений фильтров
     const [selectedAuthor, setSelectedAuthor] = useState<string | null>(null);
     const [selectedYear, setSelectedYear] = useState<number | null>(null);
     const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
 
     const accessToken = useAppSelector((state) => state.auth.accessToken);
 
-    // Получаем уникальные значения для фильтров
     const authors = getUniqueValuesByKey(tracks, 'author');
     const genres = getUniqueValuesByKey(tracks, 'genre');
 
-    // Годы выпуска
     const years = [...new Set(tracks.map(track => {
         const date = new Date(track.release_date);
         return !isNaN(date.getTime()) ? date.getFullYear() : 0;
@@ -60,7 +57,6 @@ export default function Centerblock() {
         setActiveFilter(prev => prev === filterName ? null : filterName);
     };
 
-    // Обработчики выбора элементов
     const handleAuthorSelect = (author: string) => {
         setSelectedAuthor(author);
         setActiveFilter(null);
@@ -83,7 +79,6 @@ export default function Centerblock() {
             <div className={styles.centerblock__filter}>
                 <div className={styles.filter__title}>Искать по:</div>
 
-                {/* Контейнер для автора */}
                 <div className={styles.filter__container}>
                     <div
                         className={classnames(styles.filter__button, {
@@ -110,7 +105,6 @@ export default function Centerblock() {
                     )}
                 </div>
 
-                {/* Контейнер для года */}
                 <div className={styles.filter__container}>
                     <div
                         className={classnames(styles.filter__button, {
@@ -137,7 +131,6 @@ export default function Centerblock() {
                     )}
                 </div>
 
-                {/* Контейнер для жанра */}
                 <div className={styles.filter__container}>
                     <div
                         className={classnames(styles.filter__button, {
