@@ -7,11 +7,27 @@ import { useEffect, useState } from 'react';
 import { fetchTracks } from '@/app/api/tracks';
 import { useAppSelector } from '@/app/store/store';
 import { TrackType } from '@/app/sharedTypes/types';
+import Search from '../Search/Search';
+import { getUniqueValuesByKey } from '@/app/utils/helpers';
 
 export default function Centerblock() {
     const [tracks, setTracks] = useState<TrackType[]>([]);
     const [loading, setLoading] = useState(true);
+    const [activeFilter, setActiveFilter] = useState<string | null>(null);
+
+    const [selectedAuthor, setSelectedAuthor] = useState<string | null>(null);
+    const [selectedYear, setSelectedYear] = useState<number | null>(null);
+    const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
+
     const accessToken = useAppSelector((state) => state.auth.accessToken);
+
+    const authors = getUniqueValuesByKey(tracks, 'author');
+    const genres = getUniqueValuesByKey(tracks, 'genre');
+
+    const years = [...new Set(tracks.map(track => {
+        const date = new Date(track.release_date);
+        return !isNaN(date.getTime()) ? date.getFullYear() : 0;
+    }).filter(year => year > 0))].sort((a, b) => b - a);
 
     useEffect(() => {
         if (!accessToken) return;
@@ -37,26 +53,111 @@ export default function Centerblock() {
 
     if (loading) return <div className={styles.centerblock}>Загрузка...</div>;
 
+    const toggleFilter = (filterName: string) => {
+        setActiveFilter(prev => prev === filterName ? null : filterName);
+    };
+
+    const handleAuthorSelect = (author: string) => {
+        setSelectedAuthor(author);
+        setActiveFilter(null);
+    };
+
+    const handleYearSelect = (year: number) => {
+        setSelectedYear(year);
+        setActiveFilter(null);
+    };
+
+    const handleGenreSelect = (genre: string) => {
+        setSelectedGenre(genre);
+        setActiveFilter(null);
+    };
+
     return (
         <div className={styles.centerblock}>
-            <div className={styles.centerblock__search}>
-                <svg className={styles.search__svg}>
-                    <use xlinkHref="/img/icon/sprite.svg#icon-search"></use>
-                </svg>
-                <input
-                    className={styles.search__text}
-                    type="search"
-                    placeholder="Поиск"
-                    name="search"
-                />
-            </div>
+            <Search />
             <h2 className={styles.centerblock__h2}>Треки</h2>
             <div className={styles.centerblock__filter}>
                 <div className={styles.filter__title}>Искать по:</div>
-                <div className={styles.filter__button}>исполнителю</div>
-                <div className={styles.filter__button}>году выпуска</div>
-                <div className={styles.filter__button}>жанру</div>
+
+                <div className={styles.filter__container}>
+                    <div
+                        className={classnames(styles.filter__button, {
+                            [styles.active]: activeFilter === 'author'
+                        })}
+                        onClick={() => toggleFilter('author')}
+                    >
+                        исполнителю
+                    </div>
+                    {activeFilter === 'author' && (
+                        <div className={styles.filter__list}>
+                            {authors.map(author => (
+                                <div
+                                    key={author}
+                                    className={classnames(styles.filter__item, {
+                                        [styles.selected]: selectedAuthor === author
+                                    })}
+                                    onClick={() => handleAuthorSelect(author)}
+                                >
+                                    {author}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                <div className={styles.filter__container}>
+                    <div
+                        className={classnames(styles.filter__button, {
+                            [styles.active]: activeFilter === 'year'
+                        })}
+                        onClick={() => toggleFilter('year')}
+                    >
+                        году выпуска
+                    </div>
+                    {activeFilter === 'year' && (
+                        <div className={styles.filter__list}>
+                            {years.map(year => (
+                                <div
+                                    key={year}
+                                    className={classnames(styles.filter__item, {
+                                        [styles.selected]: selectedYear === year
+                                    })}
+                                    onClick={() => handleYearSelect(year)}
+                                >
+                                    {year}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                <div className={styles.filter__container}>
+                    <div
+                        className={classnames(styles.filter__button, {
+                            [styles.active]: activeFilter === 'genre'
+                        })}
+                        onClick={() => toggleFilter('genre')}
+                    >
+                        жанру
+                    </div>
+                    {activeFilter === 'genre' && (
+                        <div className={styles.filter__list}>
+                            {genres.map(genre => (
+                                <div
+                                    key={genre}
+                                    className={classnames(styles.filter__item, {
+                                        [styles.selected]: selectedGenre === genre
+                                    })}
+                                    onClick={() => handleGenreSelect(genre)}
+                                >
+                                    {genre}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
             </div>
+
             <div className={styles.centerblock__content}>
                 <div className={styles.content__title}>
                     <div className={classnames(styles.playlistTitle__col, styles.col01)}>

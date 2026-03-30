@@ -17,8 +17,24 @@ export default function Bar() {
     useEffect(() => {
         if (!currentTrack || !audioRef.current) return;
 
+        audioRef.current.src = currentTrack.track_file || '';
+
+        audioRef.current.currentTime = 0;
+
         if (isPlay) {
-            audioRef.current.play().catch((err) => console.warn('Autoplay failed:', err));
+            audioRef.current.play().catch(err => {
+                console.warn('Autoplay failed:', err);
+            });
+        }
+    }, [currentTrack]);
+
+    useEffect(() => {
+        if (!audioRef.current || !currentTrack) return;
+
+        if (isPlay) {
+            audioRef.current.play().catch(err => {
+                console.warn('Play failed:', err);
+            });
         } else {
             audioRef.current.pause();
         }
@@ -32,8 +48,7 @@ export default function Bar() {
 
     return (
         <div className={styles.bar}>
-            <audio ref={audioRef} src={currentTrack.track_file} />
-
+            <audio ref={audioRef} />
             <div className={styles.bar__content}>
                 <div className={styles.bar__playerProgress}></div>
                 <div className={styles.bar__playerBlock}>
@@ -88,12 +103,12 @@ export default function Bar() {
                                 </div>
                                 <div className={styles.trackPlay__author}>
                                     <Link className={styles.trackPlay__authorLink} href="#">
-                                        {currentTrack.author}
+                                        {currentTrack.author || 'Неизвестный автор'}
                                     </Link>
                                 </div>
                                 <div className={styles.trackPlay__album}>
                                     <Link className={styles.trackPlay__albumLink} href="#">
-                                        {currentTrack.album}
+                                        {currentTrack.album || 'Неизвестный альбом'}
                                     </Link>
                                 </div>
                             </div>

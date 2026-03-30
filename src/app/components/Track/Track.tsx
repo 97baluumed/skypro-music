@@ -24,14 +24,17 @@ export default function Track({ track }: TrackProps) {
         dispatch(setCurrentTrack(track));
     };
 
-    const subtitleMatch = track.name.match(/\s*\(.+?\)/);
-    const mainName = subtitleMatch ? track.name.replace(subtitleMatch[0], '') : track.name;
+    const durationInSeconds = typeof track.duration_in_seconds === 'number' && 
+                              !isNaN(track.duration_in_seconds) ? 
+                              track.duration_in_seconds : 0;
+    
+    const subtitleMatch = track.name?.match(/\s*\(.+?\)/) || null;
+    const mainName = subtitleMatch ? (track.name?.replace(subtitleMatch[0], '') || track.name) : track.name;
     const subtitle = subtitleMatch ? subtitleMatch[0] : '';
 
     return (
         <div
-            className={`${styles.playlist__item} ${isActive ? styles['playlist__item--active'] : ''
-                } ${isCurrentAndPlaying ? styles['playlist__item--playing'] : ''}`}
+            className={`${styles.playlist__item} ${isActive ? styles['playlist__item--active'] : ''} ${isCurrentAndPlaying ? styles['playlist__item--playing'] : ''}`}
             onClick={onClickTrack}
         >
             <div className={styles.playlist__track}>
@@ -48,19 +51,19 @@ export default function Track({ track }: TrackProps) {
 
                     <div className="track__title-text">
                         <Link className={styles.track__titleLink} href="#">
-                            {mainName}
+                            {mainName || 'Неизвестный трек'}
                             {subtitle && <span className={styles.track__titleSpan}>{subtitle}</span>}
                         </Link>
                     </div>
                 </div>
                 <div className={styles.track__author}>
                     <Link className={styles.track__authorLink} href="#">
-                        {track.author}
+                        {track.author || 'Неизвестный автор'}
                     </Link>
                 </div>
                 <div className={styles.track__album}>
                     <Link className={styles.track__albumLink} href="#">
-                        {track.album}
+                        {track.album || 'Неизвестный альбом'}
                     </Link>
                 </div>
                 <div className="track__time">
@@ -68,7 +71,7 @@ export default function Track({ track }: TrackProps) {
                         <use xlinkHref="/img/icon/sprite.svg#icon-watch"></use>
                     </svg>
                     <span className={styles.track__timeText}>
-                        {formatTime(track.duration_in_seconds)}
+                        {formatTime(durationInSeconds)}
                     </span>
                 </div>
             </div>
