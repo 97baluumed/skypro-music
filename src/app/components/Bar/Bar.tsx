@@ -29,49 +29,42 @@ export default function Bar() {
     const currentTime = useAppSelector((state) => state.tracks.currentTime);
     const duration = currentTrack?.duration_in_seconds || 0;
 
+    const handleTimeUpdate = () => {
+        if (audioRef.current) {
+            dispatch(setCurrentTime(audioRef.current.currentTime));
+        }
+    };
+
+    const handleEnded = () => {
+        if (isLoop) {
+            if (audioRef.current) {
+                audioRef.current.play().catch(console.warn);
+            }
+        } else {
+            dispatch(nextTrack());
+        }
+    };
 
     useEffect(() => {
         const audio = audioRef.current;
-        if (!currentTrack || !audio) return;
+        if (!audio || !currentTrack) return;
 
         audio.src = currentTrack.track_file;
         audio.volume = volume;
         audio.currentTime = 0;
-    }, [currentTrack]);
-
-    useEffect(() => {
-        const audio = audioRef.current;
-        if (!audio) return;
-
-        const updateTime = () => {
-            dispatch(setCurrentTime(audio.currentTime));
-        };
-
-        const updateOnEnd = () => {
-            if (isLoop) {
-                audio.play().catch(console.warn);
-            } else {
-                dispatch(nextTrack());
-            }
-        };
-
-        audio.addEventListener('timeupdate', updateTime);
-        audio.addEventListener('ended', updateOnEnd);
-
-        return () => {
-            audio.removeEventListener('timeupdate', updateTime);
-            audio.removeEventListener('ended', updateOnEnd);
-        };
-    }, [dispatch]);
-
-
+        dispatch(setCurrentTime(0));
+    }, [currentTrack, dispatch]);
 
     useEffect(() => {
         const audio = audioRef.current;
         if (!audio || !currentTrack) return;
 
         if (isPlay) {
-            audio.play().catch(err => console.warn('Play failed (autoplay):', err));
+            audio.play().catch((err) => {
+                if (err.name !== 'AbortError') {
+                    console.warn('Play failed:', err);
+                }
+            });
         } else {
             audio.pause();
         }
@@ -96,16 +89,15 @@ export default function Bar() {
         dispatch(setCurrentTime(time));
     };
 
-    const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const vol = Number(e.target.value);
-        dispatch(setVolume(vol));
-    };
-
     if (!currentTrack) return null;
 
     return (
         <div className={styles.bar}>
-            <audio ref={audioRef} />
+            <audio
+                ref={audioRef}
+                onTimeUpdate={handleTimeUpdate}
+                onEnded={handleEnded}
+            />
             <div className={styles.bar__content}>
                 <div className={styles.bar__playerProgress}>
                     <ProgressBar max={duration} value={currentTime} onChange={handleSeek} />
@@ -233,7 +225,7 @@ export default function Bar() {
                                     max="1"
                                     step="0.01"
                                     value={volume}
-                                    onChange={handleVolumeChange}
+                                    onChange={(e) => dispatch(setVolume(Number(e.target.value)))}
                                 />
                             </div>
                             <div className={styles.volume__time}>
