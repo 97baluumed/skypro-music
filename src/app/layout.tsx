@@ -1,30 +1,35 @@
-import type { Metadata } from 'next';
-import { Montserrat } from 'next/font/google';
+'use client';
+
+import { useAppDispatch } from './store/store';
+import { rehydrate } from './store/features/authSlice';
+import { useEffect } from 'react';
 import './globals.css';
 import ReduxProvider from './store/ReduxProvider';
+import { Montserrat } from 'next/font/google';
 
 const montserrat = Montserrat({
   variable: '--font-montserrat',
   subsets: ['latin'],
 });
 
-export const metadata: Metadata = {
-  title: 'Music App',
-  description: 'Слушай музыку онлайн',
-};
-
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <ReduxProvider>
-      <html lang="ru">
-        <body className={`${montserrat.variable}`}>
-          {children}
-        </body>
-      </html>
+      <HtmlWithRehydrate>{children}</HtmlWithRehydrate>
     </ReduxProvider>
+  );
+}
+
+function HtmlWithRehydrate({ children }: { children: React.ReactNode }) {
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    dispatch(rehydrate());
+  }, [dispatch]);
+
+  return (
+    <html lang="ru">
+      <body className={montserrat.variable}>{children}</body>
+    </html>
   );
 }
