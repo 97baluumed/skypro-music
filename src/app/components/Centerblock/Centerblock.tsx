@@ -5,10 +5,11 @@ import classnames from 'classnames';
 import Track from '../Track/Track';
 import { useEffect, useState } from 'react';
 import { fetchTracks } from '@/app/api/tracks';
-import { useAppSelector } from '@/app/store/store';
+import { useAppSelector, useAppDispatch } from '@/app/store/store';
 import { TrackType } from '@/app/sharedTypes/types';
 import Search from '../Search/Search';
 import { getUniqueValuesByKey } from '@/app/utils/helpers';
+import { setTracks as setTracksAction } from '@/app/store/features/trackSlice';
 
 export default function Centerblock() {
     const [tracks, setTracks] = useState<TrackType[]>([]);
@@ -20,6 +21,7 @@ export default function Centerblock() {
     const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
 
     const accessToken = useAppSelector((state) => state.auth.accessToken);
+    const dispatch = useAppDispatch();
 
     const authors = getUniqueValuesByKey(tracks, 'author');
     const genres = getUniqueValuesByKey(tracks, 'genre');
@@ -50,6 +52,12 @@ export default function Centerblock() {
 
         loadTracks();
     }, [accessToken]);
+
+    useEffect(() => {
+        if (tracks.length > 0) {
+            dispatch(setTracksAction(tracks));
+        }
+    }, [tracks, dispatch]);
 
     if (loading) return <div className={styles.centerblock}>Загрузка...</div>;
 

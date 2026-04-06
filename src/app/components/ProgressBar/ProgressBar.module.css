@@ -1,0 +1,34 @@
+.progress {
+  width: 100%;
+  height: 5px;
+  background: #2e2e2e;
+  border-radius: 2px;
+  overflow: hidden;
+  cursor: pointer;
+  position: relative;
+}
+
+.progress__fill {
+  width: var(--percent, 0%);
+  height: 100%;
+  background: #b672ff;
+  transition: width 0.1s ease;
+}
+
+.progress__thumb {
+  position: absolute;
+  top: 50%;
+  left: var(--percent, 0%);
+  transform: translate(-50%, -50%);
+  width: 10px;
+  height: 10px;
+  background: #b672ff;
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.progress:hover .progress__thumb,
+.progress:active .progress__thumb {
+  opacity: 1;
+}
