@@ -33,14 +33,11 @@ export default function SignUpPage() {
             return;
         }
 
-        // Генерируем username из email (часть до @)
         const username = email.split('@')[0];
 
         try {
-            // 1. Регистрация (передаём username программно)
             await signup(email, password, username);
 
-            // 2. Автоматический вход после регистрации
             const loginData = await fetch('https://webdev-music-003b5b991590.herokuapp.com/user/token/', {
                 method: 'POST',
                 headers: {
@@ -55,10 +52,8 @@ export default function SignUpPage() {
 
             const tokens = await loginData.json();
 
-            // 3. Сохраняем токены и email
             dispatch(setTokens({ access: tokens.access, refresh: tokens.refresh, email }));
 
-            // 4. Переход на главную
             router.push('/music/main');
             router.refresh();
         } catch (err: unknown) {

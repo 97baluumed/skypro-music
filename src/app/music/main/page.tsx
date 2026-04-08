@@ -14,7 +14,7 @@ export default function MainPage() {
     const isAuthChecked = useAppSelector((state) => state.auth.isAuthChecked);
 
     useEffect(() => {
-        if (!isAuthChecked) return; // Ждём завершения проверки
+        if (!isAuthChecked) return;
 
         if (!accessToken) {
             router.push('/login');
@@ -42,7 +42,7 @@ export default function MainPage() {
     }, [accessToken, dispatch]);
 
     if (!isAuthChecked || !accessToken) {
-        return null; // Пока не авторизован — ничего не показываем
+        return null;
     }
 
     return <Centerblock playlistName="Треки" />;

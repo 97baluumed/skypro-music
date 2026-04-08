@@ -12,7 +12,6 @@ const montserrat = Montserrat({
   subsets: ['latin'],
 });
 
-// Этот компонент должен быть Client Component
 function AuthInitializer({ children }: { children: React.ReactNode }) {
   const dispatch = useAppDispatch();
   const isAuthChecked = useAppSelector((state) => state.auth.isAuthChecked);
