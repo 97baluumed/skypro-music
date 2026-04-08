@@ -5,16 +5,66 @@ import { useState } from 'react';
 import classNames from 'classnames';
 import Link from 'next/link';
 import Image from 'next/image';
+import { signup } from '@/app/api/auth';
+import { useRouter } from 'next/navigation';
+import { useAppDispatch } from '@/app/store/store';
+import { setTokens } from '@/app/store/features/authSlice';
 
 export default function SignUpPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [error, setError] = useState('');
 
-    const onSubmit = (e: React.FormEvent) => {
+    const router = useRouter();
+    const dispatch = useAppDispatch();
+
+    const onSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        alert('Регистрация временно недоступна. Используйте тестовые данные для входа.');
-        window.location.href = '/login';
+        setError('');
+
+        if (!email || !password) {
+            setError('Заполните все поля');
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            setError('Пароли не совпадают');
+            return;
+        }
+
+        // Генерируем username из email (часть до @)
+        const username = email.split('@')[0];
+
+        try {
+            // 1. Регистрация (передаём username программно)
+            await signup(email, password, username);
+
+            // 2. Автоматический вход после регистрации
+            const loginData = await fetch('https://webdev-music-003b5b991590.herokuapp.com/user/token/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({ email, password }).toString(),
+            });
+
+            if (!loginData.ok) {
+                throw new Error('Не удалось войти после регистрации');
+            }
+
+            const tokens = await loginData.json();
+
+            // 3. Сохраняем токены и email
+            dispatch(setTokens({ access: tokens.access, refresh: tokens.refresh, email }));
+
+            // 4. Переход на главную
+            router.push('/music/main');
+            router.refresh();
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'Ошибка регистрации';
+            setError(message);
+        }
     };
 
     return (
@@ -30,6 +80,7 @@ export default function SignUpPage() {
                                 height={21}
                             />
                         </div>
+
                         <input
                             className={classNames(styles.modal__input, styles.login)}
                             type="email"
@@ -37,6 +88,7 @@ export default function SignUpPage() {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                         />
+
                         <input
                             className={styles.modal__input}
                             type="password"
@@ -44,6 +96,7 @@ export default function SignUpPage() {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                         />
+
                         <input
                             className={styles.modal__input}
                             type="password"
@@ -51,9 +104,17 @@ export default function SignUpPage() {
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
                         />
+
+                        {error && (
+                            <div className={styles.errorContainer}>
+                                <p>{error}</p>
+                            </div>
+                        )}
+
                         <button type="submit" className={styles.modal__btnSignupEnt}>
                             Зарегистрироваться
                         </button>
+
                         <Link href="/login" style={{ marginTop: '20px', color: '#580ea2' }}>
                             Уже есть аккаунт? Войти
                         </Link>

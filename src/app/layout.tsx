@@ -1,6 +1,6 @@
 'use client';
 
-import { useAppDispatch } from './store/store';
+import { useAppDispatch, useAppSelector } from './store/store';
 import { rehydrate } from './store/features/authSlice';
 import { useEffect } from 'react';
 import './globals.css';
@@ -12,24 +12,30 @@ const montserrat = Montserrat({
   subsets: ['latin'],
 });
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <ReduxProvider>
-      <HtmlWithRehydrate>{children}</HtmlWithRehydrate>
-    </ReduxProvider>
-  );
-}
-
-function HtmlWithRehydrate({ children }: { children: React.ReactNode }) {
+// Этот компонент должен быть Client Component
+function AuthInitializer({ children }: { children: React.ReactNode }) {
   const dispatch = useAppDispatch();
+  const isAuthChecked = useAppSelector((state) => state.auth.isAuthChecked);
 
   useEffect(() => {
     dispatch(rehydrate());
   }, [dispatch]);
 
+  if (!isAuthChecked) {
+    return <div>Загрузка...</div>;
+  }
+
+  return <>{children}</>;
+}
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ru">
-      <body className={montserrat.variable}>{children}</body>
+      <body className={montserrat.variable}>
+        <ReduxProvider>
+          <AuthInitializer>{children}</AuthInitializer>
+        </ReduxProvider>
+      </body>
     </html>
   );
 }
