@@ -17,11 +17,13 @@ function AuthInitializer({ children }: { children: React.ReactNode }) {
   const isAuthChecked = useAppSelector((state) => state.auth.isAuthChecked);
 
   useEffect(() => {
-    dispatch(rehydrate());
-  }, [dispatch]);
+    if (!isAuthChecked) {
+      dispatch(rehydrate());
+    }
+  }, [dispatch, isAuthChecked]);
 
   if (!isAuthChecked) {
-    return <div>Загрузка...</div>;
+    return <div>Проверка авторизации...</div>;
   }
 
   return <>{children}</>;

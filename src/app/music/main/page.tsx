@@ -4,12 +4,12 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Centerblock from '@/app/components/Centerblock/Centerblock';
 import { useAppDispatch, useAppSelector } from '@/app/store/store';
-import { fetchTracks } from '@/app/api/tracks';
 import { setTracks as setTracksAction } from '@/app/store/features/trackSlice';
+import { fetchTracks } from '@/app/api/tracks';
 
 export default function MainPage() {
-    const dispatch = useAppDispatch();
     const router = useRouter();
+    const dispatch = useAppDispatch();
     const accessToken = useAppSelector((state) => state.auth.accessToken);
     const isAuthChecked = useAppSelector((state) => state.auth.isAuthChecked);
 
@@ -17,29 +17,24 @@ export default function MainPage() {
         if (!isAuthChecked) return;
 
         if (!accessToken) {
-            router.push('/login');
+            router.replace('/login');
+            return;
         }
-    }, [isAuthChecked, accessToken, router]);
 
-    useEffect(() => {
-        if (!accessToken) return;
-
-        const loadAllTracks = async () => {
+        const loadTracks = async () => {
             try {
-                const response = await fetchTracks(accessToken);
-                if (response.success && Array.isArray(response.data)) {
-                    dispatch(setTracksAction(response.data));
-                } else {
-                    dispatch(setTracksAction([]));
+                const res = await fetchTracks(accessToken);
+                if (res.success && Array.isArray(res.data)) {
+                    dispatch(setTracksAction(res.data));
                 }
             } catch (err) {
-                console.error('Failed to load main tracks:', err);
+                console.error('Ошибка загрузки треков:', err);
                 dispatch(setTracksAction([]));
             }
         };
 
-        loadAllTracks();
-    }, [accessToken, dispatch]);
+        loadTracks();
+    }, [isAuthChecked, accessToken, dispatch, router]);
 
     if (!isAuthChecked || !accessToken) {
         return null;

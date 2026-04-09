@@ -10,12 +10,8 @@ export default function MusicLayout({ children }: { children: React.ReactNode })
     const isLoggedIn = useAppSelector((state) => state.auth.isLoggedIn);
     const isAuthChecked = useAppSelector((state) => state.auth.isAuthChecked);
 
-    if (!isAuthChecked) {
-        return null;
-    }
-
-    if (!isLoggedIn) {
-        return null;
+    if (!isAuthChecked || !isLoggedIn) {
+        return <>{children}</>;
     }
 
     return (
