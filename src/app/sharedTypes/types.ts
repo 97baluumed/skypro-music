@@ -10,3 +10,8 @@ export interface TrackType {
     track_file: string;
     stared_user: number[];
 }
+
+export interface LoginResponse {
+    access: string;
+    refresh: string;
+}

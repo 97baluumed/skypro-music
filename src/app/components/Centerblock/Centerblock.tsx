@@ -6,60 +6,65 @@ import Track from '../Track/Track';
 import { useEffect, useState } from 'react';
 import { fetchTracks } from '@/app/api/tracks';
 import { useAppSelector, useAppDispatch } from '@/app/store/store';
-import { TrackType } from '@/app/sharedTypes/types';
 import Search from '../Search/Search';
 import { getUniqueValuesByKey } from '@/app/utils/helpers';
 import { setTracks as setTracksAction } from '@/app/store/features/trackSlice';
 
-export default function Centerblock() {
-    const [tracks, setTracks] = useState<TrackType[]>([]);
-    const [loading, setLoading] = useState(true);
+export default function Centerblock({ playlistName = 'Треки' }: { playlistName?: string }) {
+    const [loading, setLoading] = useState(false);
     const [activeFilter, setActiveFilter] = useState<string | null>(null);
-
     const [selectedAuthor, setSelectedAuthor] = useState<string | null>(null);
     const [selectedYear, setSelectedYear] = useState<number | null>(null);
     const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
 
     const accessToken = useAppSelector((state) => state.auth.accessToken);
+    const tracks = useAppSelector((state) => state.tracks.tracks);
     const dispatch = useAppDispatch();
 
-    const authors = getUniqueValuesByKey(tracks, 'author');
-    const genres = getUniqueValuesByKey(tracks, 'genre');
-
-    const years = [...new Set(tracks.map(track => {
-        const date = new Date(track.release_date);
-        return !isNaN(date.getTime()) ? date.getFullYear() : 0;
-    }).filter(year => year > 0))].sort((a, b) => b - a);
-
     useEffect(() => {
+        if (tracks.length > 0) return;
         if (!accessToken) return;
 
+        setLoading(true);
         const loadTracks = async () => {
             try {
                 const response = await fetchTracks(accessToken);
                 if (response.success && Array.isArray(response.data)) {
-                    setTracks(response.data);
+                    dispatch(setTracksAction(response.data));
                 } else {
-                    setTracks([]);
+                    dispatch(setTracksAction([]));
                 }
             } catch (err) {
                 console.error('Failed to load tracks:', err);
-                setTracks([]);
+                dispatch(setTracksAction([]));
             } finally {
                 setLoading(false);
             }
         };
 
         loadTracks();
-    }, [accessToken]);
+    }, [tracks.length, accessToken, dispatch]);
 
-    useEffect(() => {
-        if (tracks.length > 0) {
-            dispatch(setTracksAction(tracks));
-        }
-    }, [tracks, dispatch]);
+    const filteredTracks = tracks
+        .filter((track) => !selectedAuthor || track.author === selectedAuthor)
+        .filter((track) => {
+            const date = new Date(track.release_date);
+            const year = !isNaN(date.getTime()) ? date.getFullYear() : 0;
+            return !selectedYear || year === selectedYear;
+        })
+        .filter((track) => !selectedGenre || track.genre.includes(selectedGenre));
 
-    if (loading) return <div className={styles.centerblock}>Загрузка...</div>;
+    const authors = getUniqueValuesByKey(tracks, 'author');
+    const genres = getUniqueValuesByKey(tracks, 'genre');
+
+    const years = [...new Set(
+        tracks
+            .map(track => {
+                const date = new Date(track.release_date);
+                return !isNaN(date.getTime()) ? date.getFullYear() : 0;
+            })
+            .filter(year => year > 0)
+    )].sort((a, b) => b - a);
 
     const toggleFilter = (filterName: string) => {
         setActiveFilter(prev => prev === filterName ? null : filterName);
@@ -80,17 +85,22 @@ export default function Centerblock() {
         setActiveFilter(null);
     };
 
+    if (loading && tracks.length === 0) {
+        return <div className={styles.centerblock}>Загрузка...</div>;
+    }
+
     return (
         <div className={styles.centerblock}>
             <Search />
-            <h2 className={styles.centerblock__h2}>Треки</h2>
+            <h2 className={styles.centerblock__h2}>{playlistName}</h2>
+
             <div className={styles.centerblock__filter}>
                 <div className={styles.filter__title}>Искать по:</div>
 
                 <div className={styles.filter__container}>
                     <div
                         className={classnames(styles.filter__button, {
-                            [styles.active]: activeFilter === 'author'
+                            [styles.active]: activeFilter === 'author',
                         })}
                         onClick={() => toggleFilter('author')}
                     >
@@ -102,7 +112,7 @@ export default function Centerblock() {
                                 <div
                                     key={author}
                                     className={classnames(styles.filter__item, {
-                                        [styles.selected]: selectedAuthor === author
+                                        [styles.selected]: selectedAuthor === author,
                                     })}
                                     onClick={() => handleAuthorSelect(author)}
                                 >
@@ -116,7 +126,7 @@ export default function Centerblock() {
                 <div className={styles.filter__container}>
                     <div
                         className={classnames(styles.filter__button, {
-                            [styles.active]: activeFilter === 'year'
+                            [styles.active]: activeFilter === 'year',
                         })}
                         onClick={() => toggleFilter('year')}
                     >
@@ -128,7 +138,7 @@ export default function Centerblock() {
                                 <div
                                     key={year}
                                     className={classnames(styles.filter__item, {
-                                        [styles.selected]: selectedYear === year
+                                        [styles.selected]: selectedYear === year,
                                     })}
                                     onClick={() => handleYearSelect(year)}
                                 >
@@ -142,7 +152,7 @@ export default function Centerblock() {
                 <div className={styles.filter__container}>
                     <div
                         className={classnames(styles.filter__button, {
-                            [styles.active]: activeFilter === 'genre'
+                            [styles.active]: activeFilter === 'genre',
                         })}
                         onClick={() => toggleFilter('genre')}
                     >
@@ -154,7 +164,7 @@ export default function Centerblock() {
                                 <div
                                     key={genre}
                                     className={classnames(styles.filter__item, {
-                                        [styles.selected]: selectedGenre === genre
+                                        [styles.selected]: selectedGenre === genre,
                                     })}
                                     onClick={() => handleGenreSelect(genre)}
                                 >
@@ -183,9 +193,12 @@ export default function Centerblock() {
                         </svg>
                     </div>
                 </div>
+
                 <div className={styles.content__playlist}>
-                    {tracks.length > 0 ? (
-                        tracks.map((track) => <Track key={track._id} track={track} />)
+                    {filteredTracks.length > 0 ? (
+                        filteredTracks.map((track) => (
+                            <Track key={track._id} track={track} />
+                        ))
                     ) : (
                         <p>Треки не найдены</p>
                     )}
