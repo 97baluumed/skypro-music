@@ -2,6 +2,7 @@ import { TrackType } from '@/app/sharedTypes/types';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 type initialStateType = {
+    allTracks: TrackType[];
     tracks: TrackType[];
     currentTrack: TrackType | null;
     isPlay: boolean;
@@ -9,9 +10,12 @@ type initialStateType = {
     isLoop: boolean;
     volume: number;
     currentTime: number;
+    areAllTracksLoaded: boolean;
+    likedTracks: Record<string, boolean>;
 };
 
 const initialState: initialStateType = {
+    allTracks: [],
     tracks: [],
     currentTrack: null,
     isPlay: false,
@@ -19,12 +23,18 @@ const initialState: initialStateType = {
     isLoop: false,
     volume: 0.8,
     currentTime: 0,
+    areAllTracksLoaded: false,
+    likedTracks: {},
 };
 
 const trackSlice = createSlice({
     name: 'tracks',
     initialState,
     reducers: {
+        setAllTracks: (state, action: PayloadAction<TrackType[]>) => {
+            state.allTracks = action.payload;
+            state.areAllTracksLoaded = true;
+        },
         setTracks: (state, action: PayloadAction<TrackType[]>) => {
             state.tracks = action.payload;
         },
@@ -32,12 +42,6 @@ const trackSlice = createSlice({
             state.currentTrack = action.payload;
             state.isPlay = true;
             state.currentTime = 0;
-        },
-        play: (state, action: PayloadAction<boolean>) => {
-            state.isPlay = action.payload;
-        },
-        pause: (state) => {
-            state.isPlay = false;
         },
         togglePlay: (state) => {
             state.isPlay = !state.isPlay;
@@ -94,14 +98,22 @@ const trackSlice = createSlice({
             state.currentTrack = state.tracks[prevIndex];
             state.isPlay = true;
         },
+        setLikedStatus: (state, action: PayloadAction<{ trackId: string; isLiked: boolean }>) => {
+            state.likedTracks[action.payload.trackId] = action.payload.isLiked;
+        },
+        setMultipleLikedStatuses: (state, action: PayloadAction<Record<string, boolean>>) => {
+            state.likedTracks = { ...state.likedTracks, ...action.payload };
+        },
+        removeLikedTrack: (state, action: PayloadAction<string>) => {
+            delete state.likedTracks[action.payload];
+        },
     },
 });
 
 export const {
+    setAllTracks,
     setTracks,
     setCurrentTrack,
-    play,
-    pause,
     togglePlay,
     toggleShuffle,
     toggleLoop,
@@ -109,5 +121,9 @@ export const {
     setCurrentTime,
     nextTrack,
     prevTrack,
+    setLikedStatus,
+    setMultipleLikedStatuses,
+    removeLikedTrack,
 } = trackSlice.actions;
+
 export const trackSliceReducer = trackSlice.reducer;

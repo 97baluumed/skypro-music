@@ -16,6 +16,8 @@ import {
 } from '@/app/store/features/trackSlice';
 import ProgressBar from '../ProgressBar/ProgressBar';
 import { formatTime } from '@/app/utils/helpers';
+import { setLikedStatus } from '@/app/store/features/trackSlice';
+import { addTrackToFavorite, removeTrackFromFavorite } from '@/app/api/favorites';
 
 export default function Bar() {
     const dispatch = useAppDispatch();
@@ -28,6 +30,7 @@ export default function Bar() {
     const volume = useAppSelector((state) => state.tracks.volume);
     const currentTime = useAppSelector((state) => state.tracks.currentTime);
     const duration = currentTrack?.duration_in_seconds || 0;
+    const isLiked = useAppSelector((state) => !!currentTrack && !!state.tracks.likedTracks[currentTrack._id]);
 
     const handleTimeUpdate = () => {
         if (audioRef.current) {
@@ -37,9 +40,7 @@ export default function Bar() {
 
     const handleEnded = () => {
         if (isLoop) {
-            if (audioRef.current) {
-                audioRef.current.play().catch(console.warn);
-            }
+            audioRef.current?.play().catch(console.warn);
         } else {
             dispatch(nextTrack());
         }
@@ -87,6 +88,25 @@ export default function Bar() {
             audioRef.current.currentTime = time;
         }
         dispatch(setCurrentTime(time));
+    };
+
+    const handleLike = async () => {
+        if (!currentTrack) return;
+        const newStatus = !isLiked;
+        const trackId = String(currentTrack._id);
+
+        dispatch(setLikedStatus({ trackId, isLiked: newStatus }));
+
+        try {
+            if (newStatus) {
+                await addTrackToFavorite(trackId);
+            } else {
+                await removeTrackFromFavorite(trackId);
+            }
+        } catch {
+            dispatch(setLikedStatus({ trackId, isLiked: !newStatus }));
+            alert('Не удалось обновить избранное');
+        }
     };
 
     if (!currentTrack) return null;
@@ -195,16 +215,23 @@ export default function Bar() {
                             </div>
 
                             <div className={styles.trackPlay__likeDis}>
-                                <div className={classnames(styles.trackPlay__like, styles.btnIcon)}>
-                                    <svg className={styles.trackPlay__likeSvg}>
+                                <div
+                                    className={classnames(styles.trackPlay__like, styles.btnIcon)}
+                                    onClick={handleLike}
+                                    role="button"
+                                    aria-label={isLiked ? 'Удалить из избранного' : 'Добавить в избранное'}
+                                >
+                                    <svg
+                                        className={classnames(styles.trackPlay__likeSvg, { [styles.active]: isLiked })}
+                                    >
                                         <use xlinkHref="/img/icon/sprite.svg#icon-like"></use>
                                     </svg>
                                 </div>
-                                <div className={classnames(styles.trackPlay__dislike, styles.btnIcon)}>
+                                {/* <div className={classnames(styles.trackPlay__dislike, styles.btnIcon)}>
                                     <svg className={styles.trackPlay__dislikeSvg}>
                                         <use xlinkHref="/img/icon/sprite.svg#icon-dislike"></use>
                                     </svg>
-                                </div>
+                                </div> */}
                             </div>
                         </div>
                     </div>

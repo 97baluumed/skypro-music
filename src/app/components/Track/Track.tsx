@@ -3,10 +3,11 @@
 import styles from './track.module.css';
 import Link from 'next/link';
 import { TrackType } from '@/app/sharedTypes/types';
-import { useAppDispatch } from '@/app/store/store';
+import { useAppDispatch, useAppSelector } from '@/app/store/store';
 import { formatTime } from '@/app/utils/helpers';
-import { setCurrentTrack } from '@/app/store/features/trackSlice';
-import { useAppSelector } from '@/app/store/store';
+import { setCurrentTrack, setLikedStatus } from '@/app/store/features/trackSlice';
+import { addTrackToFavorite, removeTrackFromFavorite } from '@/app/api/favorites';
+import classnames from 'classnames';
 
 type TrackProps = {
     track: TrackType;
@@ -16,6 +17,7 @@ export default function Track({ track }: TrackProps) {
     const dispatch = useAppDispatch();
     const currentTrack = useAppSelector((state) => state.tracks.currentTrack);
     const isPlaying = useAppSelector((state) => state.tracks.isPlay);
+    const isLiked = useAppSelector((state) => !!track && !!state.tracks.likedTracks[track._id]);
 
     const isActive = currentTrack?._id === track._id;
     const isCurrentAndPlaying = isActive && isPlaying;
@@ -24,10 +26,11 @@ export default function Track({ track }: TrackProps) {
         dispatch(setCurrentTrack(track));
     };
 
-    const durationInSeconds = typeof track.duration_in_seconds === 'number' && 
-                              !isNaN(track.duration_in_seconds) ? 
-                              track.duration_in_seconds : 0;
-    
+    const durationInSeconds = typeof track.duration_in_seconds === 'number' &&
+        !isNaN(track.duration_in_seconds)
+        ? track.duration_in_seconds
+        : 0;
+
     const subtitleMatch = track.name?.match(/\s*\(.+?\)/) || null;
     const mainName = subtitleMatch ? (track.name?.replace(subtitleMatch[0], '') || track.name) : track.name;
     const subtitle = subtitleMatch ? subtitleMatch[0] : '';
@@ -66,10 +69,40 @@ export default function Track({ track }: TrackProps) {
                         {track.album || 'Неизвестный альбом'}
                     </Link>
                 </div>
+                <div className={styles.track__like}>
+                    <div
+                        className={styles.track__likeButton}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            const newStatus = !isLiked;
+                            const trackId = String(track._id);
+
+                            dispatch(setLikedStatus({ trackId, isLiked: newStatus }));
+
+                            if (newStatus) {
+                                addTrackToFavorite(trackId).catch(() => {
+                                    dispatch(setLikedStatus({ trackId, isLiked: false }));
+                                });
+                            } else {
+                                removeTrackFromFavorite(trackId).catch(() => {
+                                    dispatch(setLikedStatus({ trackId, isLiked: true }));
+                                });
+                            }
+                        }}
+                        role="button"
+                        aria-label={isLiked ? 'Удалить из избранного' : 'Добавить в избранное'}
+                    >
+                        <svg
+                            className={classnames(styles.track__likeSvg, { [styles.active]: isLiked })}
+                        >
+                            <use xlinkHref="/img/icon/sprite.svg#icon-like"></use>
+                        </svg>
+                    </div>
+                </div>
                 <div className="track__time">
-                    <svg className={styles.track__timeSvg}>
+                    {/* <svg className={styles.track__timeSvg}>
                         <use xlinkHref="/img/icon/sprite.svg#icon-watch"></use>
-                    </svg>
+                    </svg> */}
                     <span className={styles.track__timeText}>
                         {formatTime(durationInSeconds)}
                     </span>

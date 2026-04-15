@@ -3,91 +3,64 @@
 import styles from './Centerblock.module.css';
 import classnames from 'classnames';
 import Track from '../Track/Track';
-import { useEffect, useState } from 'react';
-import { fetchTracks } from '@/app/api/tracks';
-import { useAppSelector, useAppDispatch } from '@/app/store/store';
+import { useState } from 'react';
 import Search from '../Search/Search';
 import { getUniqueValuesByKey } from '@/app/utils/helpers';
-import { setTracks as setTracksAction } from '@/app/store/features/trackSlice';
+import { TrackType } from '@/app/sharedTypes/types';
+import { useMemo, useCallback } from 'react';
 
-export default function Centerblock({ playlistName = 'Треки' }: { playlistName?: string }) {
-    const [loading, setLoading] = useState(false);
+export default function Centerblock({
+    tracks: initialTracks,
+    playlistName = 'Треки',
+}: {
+    tracks: TrackType[];
+    playlistName?: string;
+}) {
     const [activeFilter, setActiveFilter] = useState<string | null>(null);
     const [selectedAuthor, setSelectedAuthor] = useState<string | null>(null);
     const [selectedYear, setSelectedYear] = useState<number | null>(null);
     const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
 
-    const accessToken = useAppSelector((state) => state.auth.accessToken);
-    const tracks = useAppSelector((state) => state.tracks.tracks);
-    const dispatch = useAppDispatch();
+    const filteredTracks = useMemo(() => {
+        return initialTracks
+            .filter((track) => !selectedAuthor || track.author === selectedAuthor)
+            .filter((track) => {
+                const date = new Date(track.release_date);
+                const year = !isNaN(date.getTime()) ? date.getFullYear() : 0;
+                return !selectedYear || year === selectedYear;
+            })
+            .filter((track) => !selectedGenre || track.genre.includes(selectedGenre));
+    }, [initialTracks, selectedAuthor, selectedYear, selectedGenre]);
 
-    useEffect(() => {
-        if (tracks.length > 0) return;
-        if (!accessToken) return;
+    const toggleFilter = useCallback((filterName: string) => {
+        setActiveFilter(prev => prev === filterName ? null : filterName);
+    }, []);
 
-        setLoading(true);
-        const loadTracks = async () => {
-            try {
-                const response = await fetchTracks(accessToken);
-                if (response.success && Array.isArray(response.data)) {
-                    dispatch(setTracksAction(response.data));
-                } else {
-                    dispatch(setTracksAction([]));
-                }
-            } catch (err) {
-                console.error('Failed to load tracks:', err);
-                dispatch(setTracksAction([]));
-            } finally {
-                setLoading(false);
-            }
-        };
+    const handleAuthorSelect = useCallback((author: string) => {
+        setSelectedAuthor(author);
+        setActiveFilter(null);
+    }, []);
 
-        loadTracks();
-    }, [tracks.length, accessToken, dispatch]);
+    const handleYearSelect = useCallback((year: number) => {
+        setSelectedYear(year);
+        setActiveFilter(null);
+    }, []);
 
-    const filteredTracks = tracks
-        .filter((track) => !selectedAuthor || track.author === selectedAuthor)
-        .filter((track) => {
-            const date = new Date(track.release_date);
-            const year = !isNaN(date.getTime()) ? date.getFullYear() : 0;
-            return !selectedYear || year === selectedYear;
-        })
-        .filter((track) => !selectedGenre || track.genre.includes(selectedGenre));
+    const handleGenreSelect = useCallback((genre: string) => {
+        setSelectedGenre(genre);
+        setActiveFilter(null);
+    }, []);
 
-    const authors = getUniqueValuesByKey(tracks, 'author');
-    const genres = getUniqueValuesByKey(tracks, 'genre');
-
+    const authors = getUniqueValuesByKey(initialTracks, 'author');
+    const genres = getUniqueValuesByKey(initialTracks, 'genre');
     const years = [...new Set(
-        tracks
+        initialTracks
             .map(track => {
                 const date = new Date(track.release_date);
                 return !isNaN(date.getTime()) ? date.getFullYear() : 0;
             })
             .filter(year => year > 0)
     )].sort((a, b) => b - a);
-
-    const toggleFilter = (filterName: string) => {
-        setActiveFilter(prev => prev === filterName ? null : filterName);
-    };
-
-    const handleAuthorSelect = (author: string) => {
-        setSelectedAuthor(author);
-        setActiveFilter(null);
-    };
-
-    const handleYearSelect = (year: number) => {
-        setSelectedYear(year);
-        setActiveFilter(null);
-    };
-
-    const handleGenreSelect = (genre: string) => {
-        setSelectedGenre(genre);
-        setActiveFilter(null);
-    };
-
-    if (loading && tracks.length === 0) {
-        return <div className={styles.centerblock}>Загрузка...</div>;
-    }
 
     return (
         <div className={styles.centerblock}>

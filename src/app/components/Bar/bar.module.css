@@ -257,6 +257,10 @@
   fill: transparent;
   stroke: #696969;
   cursor: pointer;
+  transition: stroke 0.2s ease;
+}
+.trackPlay__likeSvg.active {
+  stroke: #B672FF;
 }
 
 .trackPlay__dislike {
