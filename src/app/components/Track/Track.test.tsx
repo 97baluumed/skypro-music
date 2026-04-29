@@ -4,7 +4,6 @@ import { configureStore } from '@reduxjs/toolkit';
 import Track from './Track';
 import { RootState } from '@/app/store/store';
 
-// Создаем тестовый store с полным состоянием
 const createTestStore = (state?: Partial<RootState>) => {
     const defaultState: RootState = {
         tracks: {
@@ -186,7 +185,7 @@ describe('Track Component', () => {
 
     test('обрабатывает длительность трека', () => {
         const shortTrack = { ...mockTrack, duration_in_seconds: 45 };
-        const longTrack = { ...mockTrack, duration_in_seconds: 3661 }; // 1h 1m 1s
+        const longTrack = { ...mockTrack, duration_in_seconds: 3661 };
 
         const store = createTestStore();
 

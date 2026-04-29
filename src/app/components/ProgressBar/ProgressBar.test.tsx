@@ -29,7 +29,6 @@ describe('ProgressBar Component', () => {
         render(<ProgressBar max={100} value={0} onChange={mockOnChange} />);
         
         const progressBar = screen.getByRole('slider');
-        // Для тестирования клика нужно установить размеры элемента
         Object.defineProperty(progressBar, 'getBoundingClientRect', {
             writable: true,
             value: () => ({ width: 100, left: 0 })
@@ -64,7 +63,7 @@ describe('ProgressBar Component', () => {
         expect(mockOnChange).toHaveBeenCalledWith(100);
         
         fireEvent.keyDown(progressBar, { key: 'ArrowRight' });
-        expect(mockOnChange).toHaveBeenCalledWith(100); // Не должно превышать максимум
+        expect(mockOnChange).toHaveBeenCalledWith(100);
         
         fireEvent.keyDown(progressBar, { key: 'ArrowLeft' });
         expect(mockOnChange).toHaveBeenCalledWith(90);

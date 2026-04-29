@@ -14,7 +14,6 @@ describe('Search Component', () => {
         const searchInput = screen.getByPlaceholderText('Поиск');
         expect(searchInput).toBeInTheDocument();
         
-        // Ищем SVG по классу, так как role="img" не работает с SVG
         const searchIcon = screen.getByTestId('search-icon');
         expect(searchIcon).toBeInTheDocument();
     });

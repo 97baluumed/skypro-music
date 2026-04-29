@@ -89,8 +89,8 @@ describe('formatTime', () => {
     });
 
     test('должна обрабатывать граничные случаи', () => {
-        expect(formatTime(-1)).toBe('0:00'); // Отрицательное значение
-        expect(formatTime(NaN)).toBe('0:00'); // NaN
-        expect(formatTime(Infinity)).toBe('Infinity:00'); // Бесконечность
+        expect(formatTime(-1)).toBe('0:00');
+        expect(formatTime(NaN)).toBe('0:00');
+        expect(formatTime(Infinity)).toBe('Infinity:00');
     });
 });
