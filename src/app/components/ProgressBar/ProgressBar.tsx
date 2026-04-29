@@ -47,7 +47,6 @@ export default function ProgressBar({ max, value, onChange }: ProgressBarProps) 
             aria-valuemin={0}
             aria-valuemax={max}
             tabIndex={0}
-            style={{ '--percent': `${percent}%` } as React.CSSProperties}
         >
             <div className={styles.progress__fill} style={{ width: `${percent}%` }}></div>
             <div className={styles.progress__thumb}></div>

@@ -71,6 +71,7 @@ export default function Track({ track }: TrackProps) {
                 </div>
                 <div className={styles.track__like}>
                     <div
+                        data-testid="like-button"
                         className={styles.track__likeButton}
                         onClick={(e) => {
                             e.stopPropagation();

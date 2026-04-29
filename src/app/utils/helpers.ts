@@ -34,6 +34,16 @@ export function getUniqueValuesByKey(
 }
 
 export const formatTime = (seconds: number): string => {
+    // Проверяем на NaN и отрицательные значения
+    if (isNaN(seconds) || seconds < 0) {
+        return '0:00';
+    }
+
+    // Обработка бесконечности
+    if (!isFinite(seconds)) {
+        return `${seconds}:00`;
+    }
+
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, '0')}`;
