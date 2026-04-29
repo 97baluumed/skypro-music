@@ -17,38 +17,77 @@ export default function Centerblock({
     playlistName?: string;
 }) {
     const [activeFilter, setActiveFilter] = useState<string | null>(null);
-    const [selectedAuthor, setSelectedAuthor] = useState<string | null>(null);
-    const [selectedYear, setSelectedYear] = useState<number | null>(null);
-    const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
+    const [selectedAuthors, setSelectedAuthors] = useState<Set<string>>(new Set());
+    const [selectedYears, setSelectedYears] = useState<Set<number>>(new Set());
+    const [selectedGenres, setSelectedGenres] = useState<Set<string>>(new Set());
+    const [searchQuery, setSearchQuery] = useState('');
 
     const filteredTracks = useMemo(() => {
-        return initialTracks
-            .filter((track) => !selectedAuthor || track.author === selectedAuthor)
-            .filter((track) => {
-                const date = new Date(track.release_date);
-                const year = !isNaN(date.getTime()) ? date.getFullYear() : 0;
-                return !selectedYear || year === selectedYear;
-            })
-            .filter((track) => !selectedGenre || track.genre.includes(selectedGenre));
-    }, [initialTracks, selectedAuthor, selectedYear, selectedGenre]);
+        return initialTracks.filter((track) => {
+            // Фильтрация по поисковому запросу (по названию трека)
+            const searchMatch = !searchQuery ||
+                track.name.toLowerCase().includes(searchQuery.toLowerCase());
+
+            // Проверяем автора
+            const authorMatch = selectedAuthors.size === 0 ||
+                selectedAuthors.has(track.author);
+
+            // Проверяем год
+            const date = new Date(track.release_date);
+            const year = !isNaN(date.getTime()) ? date.getFullYear() : 0;
+            const yearMatch = selectedYears.size === 0 ||
+                selectedYears.has(year);
+
+            // Проверяем жанры (хотя бы один из выбранных жанров должен совпадать)
+            const genreMatch = selectedGenres.size === 0 ||
+                track.genre.some(genre => selectedGenres.has(genre));
+
+            return searchMatch && authorMatch && yearMatch && genreMatch;
+        });
+    }, [initialTracks, selectedAuthors, selectedYears, selectedGenres, searchQuery]);
 
     const toggleFilter = useCallback((filterName: string) => {
         setActiveFilter(prev => prev === filterName ? null : filterName);
     }, []);
 
     const handleAuthorSelect = useCallback((author: string) => {
-        setSelectedAuthor(prev => prev === author ? null : author);
-        setActiveFilter(null);
+        setSelectedAuthors(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(author)) {
+                newSet.delete(author);
+            } else {
+                newSet.add(author);
+            }
+            return newSet;
+        });
     }, []);
 
     const handleYearSelect = useCallback((year: number) => {
-        setSelectedYear(prev => prev === year ? null : year);
-        setActiveFilter(null);
+        setSelectedYears(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(year)) {
+                newSet.delete(year);
+            } else {
+                newSet.add(year);
+            }
+            return newSet;
+        });
     }, []);
 
     const handleGenreSelect = useCallback((genre: string) => {
-        setSelectedGenre(prev => prev === genre ? null : genre);
-        setActiveFilter(null);
+        setSelectedGenres(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(genre)) {
+                newSet.delete(genre);
+            } else {
+                newSet.add(genre);
+            }
+            return newSet;
+        });
+    }, []);
+
+    const handleSearchChange = useCallback((value: string) => {
+        setSearchQuery(value);
     }, []);
 
     const authors = getUniqueValuesByKey(initialTracks, 'author');
@@ -64,7 +103,7 @@ export default function Centerblock({
 
     return (
         <div className={styles.centerblock}>
-            <Search />
+            <Search onSearchChange={handleSearchChange} />
             <h2 className={styles.centerblock__h2}>{playlistName}</h2>
 
             <div className={styles.centerblock__filter}>
@@ -85,7 +124,7 @@ export default function Centerblock({
                                 <div
                                     key={author}
                                     className={classnames(styles.filter__item, {
-                                        [styles.selected]: selectedAuthor === author,
+                                        [styles.selected]: selectedAuthors.has(author),
                                     })}
                                     onClick={() => handleAuthorSelect(author)}
                                 >
@@ -111,7 +150,7 @@ export default function Centerblock({
                                 <div
                                     key={year}
                                     className={classnames(styles.filter__item, {
-                                        [styles.selected]: selectedYear === year,
+                                        [styles.selected]: selectedYears.has(year),
                                     })}
                                     onClick={() => handleYearSelect(year)}
                                 >
@@ -137,7 +176,7 @@ export default function Centerblock({
                                 <div
                                     key={genre}
                                     className={classnames(styles.filter__item, {
-                                        [styles.selected]: selectedGenre === genre,
+                                        [styles.selected]: selectedGenres.has(genre),
                                     })}
                                     onClick={() => handleGenreSelect(genre)}
                                 >
