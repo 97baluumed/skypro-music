@@ -71,6 +71,7 @@ export default function Track({ track }: TrackProps) {
                 </div>
                 <div className={styles.track__like}>
                     <div
+                        data-testid="like-button"
                         className={styles.track__likeButton}
                         onClick={(e) => {
                             e.stopPropagation();
@@ -100,9 +101,6 @@ export default function Track({ track }: TrackProps) {
                     </div>
                 </div>
                 <div className="track__time">
-                    {/* <svg className={styles.track__timeSvg}>
-                        <use xlinkHref="/img/icon/sprite.svg#icon-watch"></use>
-                    </svg> */}
                     <span className={styles.track__timeText}>
                         {formatTime(durationInSeconds)}
                     </span>

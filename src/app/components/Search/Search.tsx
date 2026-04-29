@@ -3,16 +3,28 @@
 import { useState } from 'react';
 import styles from './search.module.css';
 
-export default function Search() {
+type SearchProps = {
+    onSearchChange?: (value: string) => void;
+}
+
+export default function Search({ onSearchChange }: SearchProps) {
     const [searchInput, setSearchInput] = useState('')
 
     const onSearchInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchInput(e.target.value)
+        const value = e.target.value;
+        setSearchInput(value);
+        if (onSearchChange) {
+            onSearchChange(value);
+        }
     }
 
     return (
         <div className={styles.centerblock__search}>
-            <svg className={styles.search__svg}>
+            <svg
+                data-testid="search-icon"
+                className={styles.search__svg}
+                aria-hidden="true"
+            >
                 <use xlinkHref="/img/icon/sprite.svg#icon-search"></use>
             </svg>
             <input
