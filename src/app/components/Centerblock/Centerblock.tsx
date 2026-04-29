@@ -24,21 +24,17 @@ export default function Centerblock({
 
     const filteredTracks = useMemo(() => {
         return initialTracks.filter((track) => {
-            // Фильтрация по поисковому запросу (по названию трека)
             const searchMatch = !searchQuery ||
                 track.name.toLowerCase().includes(searchQuery.toLowerCase());
 
-            // Проверяем автора
             const authorMatch = selectedAuthors.size === 0 ||
                 selectedAuthors.has(track.author);
 
-            // Проверяем год
             const date = new Date(track.release_date);
             const year = !isNaN(date.getTime()) ? date.getFullYear() : 0;
             const yearMatch = selectedYears.size === 0 ||
                 selectedYears.has(year);
 
-            // Проверяем жанры (хотя бы один из выбранных жанров должен совпадать)
             const genreMatch = selectedGenres.size === 0 ||
                 track.genre.some(genre => selectedGenres.has(genre));
 

@@ -101,9 +101,6 @@ export default function Track({ track }: TrackProps) {
                     </div>
                 </div>
                 <div className="track__time">
-                    {/* <svg className={styles.track__timeSvg}>
-                        <use xlinkHref="/img/icon/sprite.svg#icon-watch"></use>
-                    </svg> */}
                     <span className={styles.track__timeText}>
                         {formatTime(durationInSeconds)}
                     </span>
