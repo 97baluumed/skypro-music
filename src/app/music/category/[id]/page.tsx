@@ -4,76 +4,71 @@ import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Centerblock from '../../../components/Centerblock/Centerblock';
 import { useAppDispatch, useAppSelector } from '@/app/store/store';
-import { setTracks } from '@/app/store/features/trackSlice';
-import { fetchTracks, fetchPlaylistById } from '@/app/api/tracks';
-import styles from '../../../components/Centerblock/Centerblock.module.css';
+import { setAllTracks, setTracks } from '@/app/store/features/trackSlice';
+import { fetchPlaylistById, fetchTracks } from '@/app/api/tracks';
+import { TrackType } from '@/app/sharedTypes/types';
 
 export default function CategoryPage() {
     const params = useParams();
     const dispatch = useAppDispatch();
     const accessToken = useAppSelector((state) => state.auth.accessToken);
-    const allTracks = useAppSelector((state) => state.tracks.tracks);
+    const isAuthChecked = useAppSelector((state) => state.auth.isAuthChecked);
+    const allTracks = useAppSelector((state) => state.tracks.allTracks);
+    const areAllTracksLoaded = useAppSelector((state) => state.tracks.areAllTracksLoaded);
 
+    const [tracks, setTracksLocal] = useState<TrackType[]>([]);
+    const [playlistName, setPlaylistName] = useState('Подборка');
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [playlistName, setPlaylistName] = useState<string>('Треки');
 
     useEffect(() => {
         const playlistId = Number(params.id);
 
-        if (!accessToken) return;
-        if (playlistId === 1) {
-            setError('Подборка не найдена');
+        if (!isAuthChecked || !accessToken || !playlistId || isNaN(playlistId)) {
             setLoading(false);
             return;
         }
 
-        const loadCategory = async () => {
+        const load = async () => {
             try {
-                let tracksToUse = allTracks;
-                if (tracksToUse.length === 0) {
-                    const tracksRes = await fetchTracks(accessToken);
-                    if (!tracksRes.success || !Array.isArray(tracksRes.data)) {
+                const playlistRes = await fetchPlaylistById(accessToken, playlistId.toString());
+                if (!playlistRes.success) throw new Error('Подборка не найдена');
+
+                const { name, items } = playlistRes.data;
+
+                let tracksData: TrackType[] = [];
+
+                if (areAllTracksLoaded && allTracks.length > 0) {
+                    tracksData = allTracks;
+                } else {
+                    const res = await fetchTracks(accessToken);
+                    if (!res.success || !Array.isArray(res.data)) {
                         throw new Error('Не удалось загрузить треки');
                     }
-                    tracksToUse = tracksRes.data;
-                    dispatch(setTracks(tracksToUse));
+                    tracksData = res.data;
+                    dispatch(setAllTracks(res.data));
                 }
 
-                const playlistRes = await fetchPlaylistById(accessToken, playlistId.toString());
-                if (!playlistRes.success) {
-                    throw new Error('Подборка не найдена');
-                }
-
-                const playlist = playlistRes.data;
-                const itemIds = Array.isArray(playlist.items) ? playlist.items : [];
-
-                const filteredTracks = tracksToUse.filter(track =>
-                    itemIds.includes(typeof track._id === 'string' ? parseInt(track._id) : track._id)
+                const filtered = tracksData.filter(track =>
+                    items.map(Number).includes(track._id)
                 );
 
-                setPlaylistName(playlist.name);
-
-                dispatch(setTracks(filteredTracks));
+                setTracksLocal(filtered);
+                dispatch(setTracks(filtered));
+                setPlaylistName(name);
             } catch (err) {
-                console.error('Ошибка загрузки подборки:', err);
-                setError(err instanceof Error ? err.message : 'Неизвестная ошибка');
-                dispatch(setTracks([]));
+                console.error('Ошибка:', err);
+                setTracksLocal([]);
+                setPlaylistName('Ошибка');
             } finally {
                 setLoading(false);
             }
         };
 
-        loadCategory();
-    }, [accessToken, params.id, dispatch, allTracks]);
+        load();
+    }, [accessToken, params.id, areAllTracksLoaded, allTracks, isAuthChecked, dispatch]);
 
-    if (loading) {
-        return <div className={styles.centerblock}> Загрузка подборки...</div >;
-    }
+    if (!isAuthChecked || !accessToken) return null;
+    if (loading) return <div>Загрузка подборки...</div>;
 
-    if (error) {
-        return <div>{error}</div>;
-    }
-
-    return <Centerblock playlistName={playlistName} />;
+    return <Centerblock tracks={tracks} playlistName={playlistName} />;
 }

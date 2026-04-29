@@ -170,3 +170,31 @@
     justify-content: center;
     margin-right: 17px;
 }
+
+.track__like {
+    width: 60px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.track__likeButton {
+    padding: 5px;
+    cursor: pointer;
+}
+
+.track__likeSvg {
+    width: 14px;
+    height: 12px;
+    fill: transparent;
+    stroke: #696969;
+    transition: stroke 0.2s ease;
+}
+
+.track__likeSvg.active {
+    stroke: #b672ff;
+}
+
+.track__likeButton:hover .track__likeSvg {
+    stroke: #d9b6ff;
+}

@@ -1,16 +1,27 @@
 'use client';
 
-import { useAppSelector } from '@/app/store/store';
+import { useAppSelector, useAppDispatch } from '@/app/store/store';
 import styles from './music-layout.module.css';
 import MenuNav from '../components/MenuNav/MenuNav';
 import Sidebar from '../components/Sidebar/Sidebar';
 import Bar from '../components/Bar/Bar';
+import { useEffect } from 'react';
+import { rehydrate } from '../store/features/authSlice';
 
 export default function MusicLayout({ children }: { children: React.ReactNode }) {
-    const isLoggedIn = useAppSelector((state) => state.auth.isLoggedIn);
+    const dispatch = useAppDispatch();
     const isAuthChecked = useAppSelector((state) => state.auth.isAuthChecked);
+    const isLoggedIn = useAppSelector((state) => state.auth.isLoggedIn);
 
-    if (!isAuthChecked || !isLoggedIn) {
+    useEffect(() => {
+        dispatch(rehydrate());
+    }, [dispatch]);
+
+    if (!isAuthChecked) {
+        return <div>Загрузка...</div>;
+    }
+
+    if (!isLoggedIn) {
         return <>{children}</>;
     }
 
