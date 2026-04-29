@@ -37,17 +37,17 @@ export default function Centerblock({
     }, []);
 
     const handleAuthorSelect = useCallback((author: string) => {
-        setSelectedAuthor(author);
+        setSelectedAuthor(prev => prev === author ? null : author);
         setActiveFilter(null);
     }, []);
 
     const handleYearSelect = useCallback((year: number) => {
-        setSelectedYear(year);
+        setSelectedYear(prev => prev === year ? null : year);
         setActiveFilter(null);
     }, []);
 
     const handleGenreSelect = useCallback((genre: string) => {
-        setSelectedGenre(genre);
+        setSelectedGenre(prev => prev === genre ? null : genre);
         setActiveFilter(null);
     }, []);
 
